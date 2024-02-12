@@ -36,6 +36,13 @@ namespace ModifiedMovement
             Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_NAME} is loaded!");
         }
     }
+
+	public static class PluginInfo
+	{
+		public const string PLUGIN_GUID = "ModifiedMovement";
+		public const string PLUGIN_NAME = "ModifiedMovement";
+		public const string PLUGIN_VERSION = "1.0.2";
+	}
 }
 
 namespace ModifiedMovement.Patches
