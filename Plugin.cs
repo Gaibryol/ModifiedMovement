@@ -4,11 +4,13 @@ using GameNetcodeStuff;
 using HarmonyLib;
 using ModifiedMovement;
 using ModifiedMovement.Patches;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace ModifiedMovement
 {
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
+	[BepInDependency("io.github.CSync")]
     public class Plugin : BaseUnityPlugin
     {
 		private readonly Harmony harmony = new Harmony(PluginInfo.PLUGIN_GUID);
@@ -47,8 +49,8 @@ namespace ModifiedMovement.Patches
 		{
 			if (___isSprinting)
 			{
-				___sprintMeter = Mathf.Clamp(___sprintMeter - ((Time.deltaTime / ___sprintTime * ___carryWeight) * Config.staminaUsageMultiplier.Value), 0f, Config.maxStaminaMultiplier.Value);
-				___sprintMultiplier = Mathf.Lerp(___sprintMultiplier, Config.sprintSpeed.Value, Time.deltaTime);
+				___sprintMeter = Mathf.Clamp(___sprintMeter - ((Time.deltaTime / ___sprintTime * ___carryWeight) * Config.Instance.staminaUsageMultiplier.Value), 0f, Config.Instance.maxStaminaMultiplier.Value);
+				___sprintMultiplier = Mathf.Lerp(___sprintMultiplier, Config.Instance.sprintSpeed.Value, Time.deltaTime);
 			}
 			else
 			{
@@ -56,29 +58,29 @@ namespace ModifiedMovement.Patches
 
 				if (___isWalking)
 				{
-					___sprintMeter = Mathf.Clamp(___sprintMeter + ((Time.deltaTime / (___sprintTime + 9f)) * Config.staminaRegenMultiplierWalking.Value), 0f, Config.maxStaminaMultiplier.Value);
+					___sprintMeter = Mathf.Clamp(___sprintMeter + ((Time.deltaTime / (___sprintTime + 9f)) * Config.Instance.staminaRegenMultiplierWalking.Value), 0f, Config.Instance.maxStaminaMultiplier.Value);
 				}
 				else
 				{
-					___sprintMeter = Mathf.Clamp(___sprintMeter + ((Time.deltaTime / (___sprintTime + 4f)) * Config.staminaRegenMultiplierStationary.Value), 0f, Config.maxStaminaMultiplier.Value);
+					___sprintMeter = Mathf.Clamp(___sprintMeter + ((Time.deltaTime / (___sprintTime + 4f)) * Config.Instance.staminaRegenMultiplierStationary.Value), 0f, Config.Instance.maxStaminaMultiplier.Value);
 				}
 			}
 		}
 
-		[HarmonyPatch("ConnectClientToPlayerObject")]
 		[HarmonyPostfix]
+		[HarmonyPatch("ConnectClientToPlayerObject")]
 		public static void InitializeLocalPlayer()
 		{
 			if (Config.IsHost)
 			{
-				Config.MessageManager.RegisterNamedMessageHandler("ModName_OnRequestConfigSync", Config.OnRequestSync);
+				Config.MessageManager.RegisterNamedMessageHandler($"{PluginInfo.PLUGIN_GUID}_OnRequestConfigSync", Config.OnRequestSync);
 				Config.Synced = true;
 
 				return;
 			}
 
 			Config.Synced = false;
-			Config.MessageManager.RegisterNamedMessageHandler("ModName_OnReceiveConfigSync", Config.OnReceiveSync);
+			Config.MessageManager.RegisterNamedMessageHandler($"{PluginInfo.PLUGIN_GUID}_OnReceiveConfigSync", Config.OnReceiveSync);
 			Config.RequestSync();
 		}
 

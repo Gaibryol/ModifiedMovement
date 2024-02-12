@@ -1,51 +1,57 @@
 ﻿using BepInEx.Configuration;
+using CSync.Lib;
+using CSync.Util;
 using System;
+using System.Runtime.Serialization;
 using Unity.Collections;
 using Unity.Netcode;
 
 namespace ModifiedMovement
 {
+	[Serializable]
 	public class Config : SyncedInstance<Config>
 	{
-		public static ConfigEntry<float> maxStaminaMultiplier;
-		public static ConfigEntry<float> staminaUsageMultiplier;
-		public static ConfigEntry<float> staminaRegenMultiplierWalking;
-		public static ConfigEntry<float> staminaRegenMultiplierStationary;
-		public static ConfigEntry<float> sprintSpeed;
+		public ConfigEntry<float> DisplayDebugInfo { get; private set; }
+
+		[DataMember] public SyncedEntry<float> maxStaminaMultiplier;
+		[DataMember] public SyncedEntry<float> staminaUsageMultiplier;
+		[DataMember] public SyncedEntry<float> staminaRegenMultiplierWalking;
+		[DataMember] public SyncedEntry<float> staminaRegenMultiplierStationary;
+		[DataMember] public SyncedEntry<float> sprintSpeed;
 
 		public Config(ConfigFile cfg)
 		{
 			InitInstance(this);
 
-			maxStaminaMultiplier = cfg.Bind(
+			maxStaminaMultiplier = cfg.BindSyncedEntry(
 				"Movespeed",
 				"MaxStaminaMultiplier",
 				1f,
 				"Multiplier for maximum stamina (Default = 1)"
 			);
 
-			staminaUsageMultiplier = cfg.Bind(
+			staminaUsageMultiplier = cfg.BindSyncedEntry(
 				"Movespeed",
-				"SprintUsageMultiplier",
+				"StaminaUsageMultiplier",
 				1f,
 				"Multiplier for the rate stamina gets used when sprinting (Default = 1)"
 			);
 
-			staminaRegenMultiplierWalking = cfg.Bind(
+			staminaRegenMultiplierWalking = cfg.BindSyncedEntry(
 				"Movespeed",
 				"StaminaRegenMultiplierWalking",
 				1f,
 				"Multiplier for the rate stamina regenerates when walking (Default = 1)"
 			);
 
-			staminaRegenMultiplierStationary = cfg.Bind(
+			staminaRegenMultiplierStationary = cfg.BindSyncedEntry(
 				"Movespeed",
 				"StaminaRegenMultiplierStationary",
 				1f,
 				"Multiplier for the rate stamina regenerates when stationary (Default = 1)"
 			);
 
-			sprintSpeed = cfg.Bind(
+			sprintSpeed = cfg.BindSyncedEntry(
 				"Movespeed",
 				"SprintSpeed",
 				2.25f,
@@ -53,19 +59,19 @@ namespace ModifiedMovement
 			);
 		}
 
-		public static void RequestSync()
+		internal static void RequestSync()
 		{
 			if (!IsClient) return;
 
 			using FastBufferWriter stream = new(IntSize, Allocator.Temp);
-			MessageManager.SendNamedMessage("ModName_OnRequestConfigSync", 0uL, stream);
+
+			// Method `OnRequestSync` will then get called on host.
+			stream.SendMessage($"{PluginInfo.PLUGIN_GUID}_OnRequestConfigSync");
 		}
 
-		public static void OnRequestSync(ulong clientId, FastBufferReader _)
+		internal static void OnRequestSync(ulong clientId, FastBufferReader _)
 		{
 			if (!IsHost) return;
-
-			//Plugin.Logger.LogInfo($"Config sync request received from client: {clientId}");
 
 			byte[] array = SerializeToBytes(Instance);
 			int value = array.Length;
@@ -77,15 +83,15 @@ namespace ModifiedMovement
 				stream.WriteValueSafe(in value, default);
 				stream.WriteBytesSafe(array);
 
-				MessageManager.SendNamedMessage("ModName_OnReceiveConfigSync", clientId, stream);
+				stream.SendMessage($"{PluginInfo.PLUGIN_GUID}_OnReceiveConfigSync", clientId);
 			}
 			catch (Exception e)
 			{
-				//Plugin.Logger.LogInfo($"Error occurred syncing config with client: {clientId}\n{e}");
+				//Plugin.Logger.LogError($"Error occurred syncing config with client: {clientId}\n{e}");
 			}
 		}
 
-		public static void OnReceiveSync(ulong _, FastBufferReader reader)
+		internal static void OnReceiveSync(ulong _, FastBufferReader reader)
 		{
 			if (!reader.TryBeginRead(IntSize))
 			{
@@ -103,9 +109,14 @@ namespace ModifiedMovement
 			byte[] data = new byte[val];
 			reader.ReadBytesSafe(ref data, val);
 
-			SyncInstance(data);
-
-			//Plugin.Logger.LogInfo("Successfully synced config with host.");
+			try
+			{
+				SyncInstance(data);
+			}
+			catch (Exception e)
+			{
+				//Plugin.Logger.LogError($"Error syncing config instance!\n{e}");
+			}
 		}
 	}
 }
