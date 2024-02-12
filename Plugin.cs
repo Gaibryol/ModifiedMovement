@@ -48,7 +48,7 @@ namespace ModifiedMovement
 	{
 		public const string PLUGIN_GUID = "ModifiedMovement";
 		public const string PLUGIN_NAME = "ModifiedMovement";
-		public const string PLUGIN_VERSION = "1.1.0";
+		public const string PLUGIN_VERSION = "1.2.0";
 	}
 }
 
@@ -79,6 +79,20 @@ namespace ModifiedMovement.Patches
 					___sprintMeter = Mathf.Clamp(___sprintMeter + ((Time.deltaTime / (___sprintTime + 4f)) * Config.Instance.StaminaRegenMultiplierStationary.Value), 0f, Config.Instance.MaxStaminaMultiplier.Value);
 				}
 			}
+		}
+
+		[HarmonyPrefix]
+		[HarmonyPatch("PlayerJump")]
+		static void ModifiedJumpPatch(ref float ___jumpForce)
+		{
+			___jumpForce *= Config.Instance.JumpMultiplier.Value;
+		}
+
+		[HarmonyPostfix]
+		[HarmonyPatch("Jump_performed")]
+		static void ModifiedJumpStaminaPatch(ref float ___sprintMeter)
+		{
+			___sprintMeter = Mathf.Clamp(___sprintMeter - (0.08f * Config.Instance.JumpStaminaUsageMultiplier), 0f, Config.Instance.MaxStaminaMultiplier);
 		}
 
 		[HarmonyPostfix]

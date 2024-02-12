@@ -17,6 +17,8 @@ namespace ModifiedMovement
 		[DataMember] public SyncedEntry<float> StaminaRegenMultiplierWalking { get; private set; }
 		[DataMember] public SyncedEntry<float> StaminaRegenMultiplierStationary { get; private set; }
 		[DataMember] public SyncedEntry<float> SprintSpeed { get; private set; }
+		[DataMember] public SyncedEntry<float> JumpMultiplier { get; private set; }
+		[DataMember] public SyncedEntry<float> JumpStaminaUsageMultiplier { get; private set; }
 
 		public Config(ConfigFile cfg)
 		{
@@ -55,6 +57,20 @@ namespace ModifiedMovement
 				"SprintSpeed",
 				2.5f,
 				"Maximum sprinting speed (Vanilla Lethal Company = 2.25)"
+			);
+
+			JumpMultiplier = cfg.BindSyncedEntry(
+				"Movespeed",
+				"JumpMultiplier",
+				1f,
+				"Multiplier for the jump height (Vanilla Lethal Company = 1)"
+			);
+
+			JumpStaminaUsageMultiplier = cfg.BindSyncedEntry(
+				"Movespeed",
+				"JumpStaminaUsageMultiplier",
+				0.5f,
+				"Multiplier for the rate stamina gets used when jumping (Vanilla Lethal Company = 1)"
 			);
 		}
 
