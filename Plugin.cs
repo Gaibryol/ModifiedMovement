@@ -16,7 +16,7 @@ namespace ModifiedMovement
     {
 		private readonly Harmony harmony = new Harmony(PluginInfo.PLUGIN_GUID);
 
-		public static Config Config { get; internal set; }
+		public static Config Config { get; private set; }
 
 		public static Plugin Instance { get; internal set; }
 
@@ -48,7 +48,7 @@ namespace ModifiedMovement
 	{
 		public const string PLUGIN_GUID = "ModifiedMovement";
 		public const string PLUGIN_NAME = "ModifiedMovement";
-		public const string PLUGIN_VERSION = "1.0.3";
+		public const string PLUGIN_VERSION = "1.1.0";
 	}
 }
 

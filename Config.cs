@@ -3,13 +3,9 @@ using CSync.Lib;
 using CSync.Util;
 using System;
 using System.Runtime.Serialization;
-using GameNetcodeStuff;
 using HarmonyLib;
 using Unity.Collections;
 using Unity.Netcode;
-using UnityEngine;
-using ModifiedMovement;
-using BepInEx;
 
 namespace ModifiedMovement
 {
