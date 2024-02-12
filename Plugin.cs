@@ -4,6 +4,7 @@ using GameNetcodeStuff;
 using HarmonyLib;
 using ModifiedMovement;
 using ModifiedMovement.Patches;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
@@ -15,9 +16,11 @@ namespace ModifiedMovement
     {
 		private readonly Harmony harmony = new Harmony(PluginInfo.PLUGIN_GUID);
 
-		public static Config MyConfig { get; internal set; }
+		public static Config Config { get; internal set; }
 
-		private static Plugin Instance;
+		public static Plugin Instance { get; internal set; }
+
+		public static new ManualLogSource Logger { get; private set; }
 
         private void Awake()
         {
@@ -26,11 +29,15 @@ namespace ModifiedMovement
 				Instance = this;
 			}
 
-			MyConfig = new(base.Config);
+			Logger = base.Logger;
 
-			harmony.PatchAll(typeof(Plugin));
-			harmony.PatchAll(typeof(PlayerControllerBPatch));
-			harmony.PatchAll(typeof(Config));
+			Config = new(base.Config);
+
+			//harmony.PatchAll(typeof(Plugin));
+			//harmony.PatchAll(typeof(PlayerControllerBPatch));
+			//harmony.PatchAll(typeof(GameNetworkManager));
+			//harmony.PatchAll(typeof(Config));
+			harmony.PatchAll(Assembly.GetExecutingAssembly());
 
             // Plugin startup logic
             Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_NAME} is loaded!");
@@ -41,7 +48,7 @@ namespace ModifiedMovement
 	{
 		public const string PLUGIN_GUID = "ModifiedMovement";
 		public const string PLUGIN_NAME = "ModifiedMovement";
-		public const string PLUGIN_VERSION = "1.0.2";
+		public const string PLUGIN_VERSION = "1.0.3";
 	}
 }
 
@@ -50,14 +57,14 @@ namespace ModifiedMovement.Patches
 	[HarmonyPatch(typeof(PlayerControllerB))]
 	internal class PlayerControllerBPatch
 	{
-		[HarmonyPatch("Update")]
 		[HarmonyPostfix]
+		[HarmonyPatch("Update")]
 		static void ModifiedMovementPatch(ref float ___sprintMeter, ref bool ___isSprinting, ref bool ___isWalking, ref float ___sprintTime, ref float ___carryWeight, ref float ___sprintMultiplier)
 		{
 			if (___isSprinting)
 			{
-				___sprintMeter = Mathf.Clamp(___sprintMeter - ((Time.deltaTime / ___sprintTime * ___carryWeight) * Config.Instance.staminaUsageMultiplier.Value), 0f, Config.Instance.maxStaminaMultiplier.Value);
-				___sprintMultiplier = Mathf.Lerp(___sprintMultiplier, Config.Instance.sprintSpeed.Value, Time.deltaTime);
+				___sprintMeter = Mathf.Clamp(___sprintMeter - ((Time.deltaTime / ___sprintTime * ___carryWeight) * Config.Instance.StaminaUsageMultiplier.Value), 0f, Config.Instance.MaxStaminaMultiplier.Value);
+				___sprintMultiplier = Mathf.Lerp(___sprintMultiplier, Config.Instance.SprintSpeed.Value, Time.deltaTime);
 			}
 			else
 			{
@@ -65,11 +72,11 @@ namespace ModifiedMovement.Patches
 
 				if (___isWalking)
 				{
-					___sprintMeter = Mathf.Clamp(___sprintMeter + ((Time.deltaTime / (___sprintTime + 9f)) * Config.Instance.staminaRegenMultiplierWalking.Value), 0f, Config.Instance.maxStaminaMultiplier.Value);
+					___sprintMeter = Mathf.Clamp(___sprintMeter + ((Time.deltaTime / (___sprintTime + 9f)) * Config.Instance.StaminaRegenMultiplierWalking.Value), 0f, Config.Instance.MaxStaminaMultiplier.Value);
 				}
 				else
 				{
-					___sprintMeter = Mathf.Clamp(___sprintMeter + ((Time.deltaTime / (___sprintTime + 4f)) * Config.Instance.staminaRegenMultiplierStationary.Value), 0f, Config.Instance.maxStaminaMultiplier.Value);
+					___sprintMeter = Mathf.Clamp(___sprintMeter + ((Time.deltaTime / (___sprintTime + 4f)) * Config.Instance.StaminaRegenMultiplierStationary.Value), 0f, Config.Instance.MaxStaminaMultiplier.Value);
 				}
 			}
 		}
@@ -83,16 +90,22 @@ namespace ModifiedMovement.Patches
 				Config.MessageManager.RegisterNamedMessageHandler($"{PluginInfo.PLUGIN_GUID}_OnRequestConfigSync", Config.OnRequestSync);
 				Config.Synced = true;
 
+				Plugin.Logger.LogInfo("Initialize Is Host");
 				return;
 			}
 
+			Plugin.Logger.LogInfo("Initialize Client");
 			Config.Synced = false;
 			Config.MessageManager.RegisterNamedMessageHandler($"{PluginInfo.PLUGIN_GUID}_OnReceiveConfigSync", Config.OnReceiveSync);
 			Config.RequestSync();
 		}
+	}
 
+	[HarmonyPatch(typeof(GameNetworkManager))]
+	internal class NetworkManagerPatch
+	{
 		[HarmonyPostfix]
-		[HarmonyPatch(typeof(GameNetworkManager), "StartDisconnect")]
+		[HarmonyPatch("StartDisconnect")]
 		public static void PlayerLeave()
 		{
 			Config.RevertSync();

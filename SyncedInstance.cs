@@ -56,7 +56,7 @@ namespace ModifiedMovement
 			}
 			catch (Exception e)
 			{
-				//Plugin.Logger.LogError($"Error serializing instance: {e}");
+				Plugin.Logger.LogInfo($"Error serializing instance: {e}");
 				return null;
 			}
 		}
@@ -72,7 +72,7 @@ namespace ModifiedMovement
 			}
 			catch (Exception e)
 			{
-				//Plugin.Logger.LogError($"Error deserializing instance: {e}");
+				Plugin.Logger.LogInfo($"Error deserializing instance: {e}");
 				return default;
 			}
 		}

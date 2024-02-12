@@ -3,59 +3,62 @@ using CSync.Lib;
 using CSync.Util;
 using System;
 using System.Runtime.Serialization;
+using GameNetcodeStuff;
+using HarmonyLib;
 using Unity.Collections;
 using Unity.Netcode;
+using UnityEngine;
+using ModifiedMovement;
+using BepInEx;
 
 namespace ModifiedMovement
 {
-	[Serializable]
+	[DataContract]
 	public class Config : SyncedInstance<Config>
 	{
-		public ConfigEntry<float> DisplayDebugInfo { get; private set; }
-
-		[DataMember] public SyncedEntry<float> maxStaminaMultiplier;
-		[DataMember] public SyncedEntry<float> staminaUsageMultiplier;
-		[DataMember] public SyncedEntry<float> staminaRegenMultiplierWalking;
-		[DataMember] public SyncedEntry<float> staminaRegenMultiplierStationary;
-		[DataMember] public SyncedEntry<float> sprintSpeed;
+		[DataMember] public SyncedEntry<float> MaxStaminaMultiplier { get; private set; }
+		[DataMember] public SyncedEntry<float> StaminaUsageMultiplier { get; private set; }
+		[DataMember] public SyncedEntry<float> StaminaRegenMultiplierWalking { get; private set; }
+		[DataMember] public SyncedEntry<float> StaminaRegenMultiplierStationary { get; private set; }
+		[DataMember] public SyncedEntry<float> SprintSpeed { get; private set; }
 
 		public Config(ConfigFile cfg)
 		{
 			InitInstance(this);
 
-			maxStaminaMultiplier = cfg.BindSyncedEntry(
+			MaxStaminaMultiplier = cfg.BindSyncedEntry(
 				"Movespeed",
 				"MaxStaminaMultiplier",
-				1f,
-				"Multiplier for maximum stamina (Default = 1)"
+				1.5f,
+				"Multiplier for maximum stamina (Vanilla Lethal Company = 1)"
 			);
 
-			staminaUsageMultiplier = cfg.BindSyncedEntry(
+			StaminaUsageMultiplier = cfg.BindSyncedEntry(
 				"Movespeed",
 				"StaminaUsageMultiplier",
 				1f,
-				"Multiplier for the rate stamina gets used when sprinting (Default = 1)"
+				"Multiplier for the rate stamina gets used when sprinting (Vanilla Lethal Company = 1)"
 			);
 
-			staminaRegenMultiplierWalking = cfg.BindSyncedEntry(
+			StaminaRegenMultiplierWalking = cfg.BindSyncedEntry(
 				"Movespeed",
 				"StaminaRegenMultiplierWalking",
-				1f,
-				"Multiplier for the rate stamina regenerates when walking (Default = 1)"
+				1.25f,
+				"Multiplier for the rate stamina regenerates when walking (Vanilla Lethal Company = 1)"
 			);
 
-			staminaRegenMultiplierStationary = cfg.BindSyncedEntry(
+			StaminaRegenMultiplierStationary = cfg.BindSyncedEntry(
 				"Movespeed",
 				"StaminaRegenMultiplierStationary",
-				1f,
-				"Multiplier for the rate stamina regenerates when stationary (Default = 1)"
+				1.5f,
+				"Multiplier for the rate stamina regenerates when stationary (Vanilla Lethal Company = 1)"
 			);
 
-			sprintSpeed = cfg.BindSyncedEntry(
+			SprintSpeed = cfg.BindSyncedEntry(
 				"Movespeed",
 				"SprintSpeed",
-				2.25f,
-				"Maximum sprinting speed (Default = 2.25)"
+				2.5f,
+				"Maximum sprinting speed (Vanilla Lethal Company = 2.25)"
 			);
 		}
 
@@ -73,6 +76,8 @@ namespace ModifiedMovement
 		{
 			if (!IsHost) return;
 
+			Plugin.Logger.LogInfo($"Config sync request received from client: {clientId}");
+
 			byte[] array = SerializeToBytes(Instance);
 			int value = array.Length;
 
@@ -87,7 +92,7 @@ namespace ModifiedMovement
 			}
 			catch (Exception e)
 			{
-				//Plugin.Logger.LogError($"Error occurred syncing config with client: {clientId}\n{e}");
+				Plugin.Logger.LogInfo($"Error occurred syncing config with client: {clientId}\n{e}");
 			}
 		}
 
@@ -95,14 +100,14 @@ namespace ModifiedMovement
 		{
 			if (!reader.TryBeginRead(IntSize))
 			{
-				//Plugin.Logger.LogError("Config sync error: Could not begin reading buffer.");
+				Plugin.Logger.LogInfo("Config sync error: Could not begin reading buffer.");
 				return;
 			}
 
 			reader.ReadValueSafe(out int val, default);
 			if (!reader.TryBeginRead(val))
 			{
-				//Plugin.Logger.LogError("Config sync error: Host could not sync.");
+				Plugin.Logger.LogInfo("Config sync error: Host could not sync.");
 				return;
 			}
 
@@ -112,10 +117,11 @@ namespace ModifiedMovement
 			try
 			{
 				SyncInstance(data);
+				Plugin.Logger.LogInfo($"Syncing... (ex. Sprint Speed = {Instance.SprintSpeed}");
 			}
 			catch (Exception e)
 			{
-				//Plugin.Logger.LogError($"Error syncing config instance!\n{e}");
+				Plugin.Logger.LogInfo($"Error syncing config instance!\n{e}");
 			}
 		}
 	}

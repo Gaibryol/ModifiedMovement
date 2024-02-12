@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>ModifiedMovement</AssemblyName>
     <Description>Lethal Company mod that changes sprint and stamina values</Description>
-    <Version>1.0.2</Version>
+    <Version>1.0.3</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
@@ -35,6 +35,9 @@
     </Reference>
     <Reference Include="BepInEx">
       <HintPath>C:\Users\gaibr\AppData\Roaming\Thunderstore Mod Manager\DataFolder\LethalCompany\profiles\Dev\BepInEx\core\BepInEx.dll</HintPath>
+    </Reference>
+    <Reference Include="CSync">
+      <HintPath>C:\Users\gaibr\AppData\Roaming\Thunderstore Mod Manager\DataFolder\LethalCompany\profiles\Dev\BepInEx\plugins\Owen3H-CSync\CSync.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Collections">
       <HintPath>..\..\SteamLibrary\steamapps\common\Lethal Company\Lethal Company_Data\Managed\Unity.Collections.dll</HintPath>
