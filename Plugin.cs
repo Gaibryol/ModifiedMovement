@@ -48,7 +48,7 @@ namespace ModifiedMovement
 	{
 		public const string PLUGIN_GUID = "ModifiedMovement";
 		public const string PLUGIN_NAME = "ModifiedMovement";
-		public const string PLUGIN_VERSION = "1.3.0";
+		public const string PLUGIN_VERSION = "1.4.0";
 	}
 }
 
@@ -83,9 +83,11 @@ namespace ModifiedMovement.Patches
 
 		[HarmonyPrefix]
 		[HarmonyPatch("Update")]
-		static void WalkSpeedPatch(ref float ___movementSpeed)
+		static void WalkClimbSpeedPatch(ref float ___movementSpeed, ref float ___climbSpeed, ref float ___limpMultiplier)
 		{
 			___movementSpeed = Config.Instance.MoveSpeed.Value;
+			___climbSpeed = Config.Instance.ClimbSpeed.Value;
+			___limpMultiplier = Config.Instance.LimpMultiplier.Value;
 		}
 
 		[HarmonyPrefix]

@@ -20,6 +20,8 @@ namespace ModifiedMovement
 		[DataMember] public SyncedEntry<float> JumpMultiplier { get; private set; }
 		[DataMember] public SyncedEntry<float> JumpStaminaUsageMultiplier { get; private set; }
 		[DataMember] public SyncedEntry<float> MoveSpeed {  get; private set; }
+		[DataMember] public SyncedEntry<float> ClimbSpeed { get; private set; }
+		[DataMember] public SyncedEntry<float> LimpMultiplier { get; private set; }
 
 		public Config(ConfigFile cfg)
 		{
@@ -67,6 +69,13 @@ namespace ModifiedMovement
 				"Maximum walking speed (Vanilla Lethal Company = 0.5)"
 			);
 
+			ClimbSpeed = cfg.BindSyncedEntry(
+				"Movespeed",
+				"ClimbSpeed",
+				4f,
+				"Maximum climbing speed (Vanilla Lethal Company = 1)"
+			);
+
 			JumpMultiplier = cfg.BindSyncedEntry(
 				"Movespeed",
 				"JumpMultiplier",
@@ -79,6 +88,13 @@ namespace ModifiedMovement
 				"JumpStaminaUsageMultiplier",
 				0.5f,
 				"Multiplier for the rate stamina gets used when jumping (Vanilla Lethal Company = 1)"
+			);
+
+			LimpMultiplier = cfg.BindSyncedEntry(
+				"Movespeed",
+				"LimpMultiplier",
+				0.2f,
+				"Multiplier for player movespeed when limping (Vanilla Lethal Company = 0.2)"
 			);
 		}
 
