@@ -48,7 +48,7 @@ namespace ModifiedMovement
 	{
 		public const string PLUGIN_GUID = "ModifiedMovement";
 		public const string PLUGIN_NAME = "ModifiedMovement";
-		public const string PLUGIN_VERSION = "1.4.0";
+		public const string PLUGIN_VERSION = "1.4.1";
 	}
 }
 

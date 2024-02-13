@@ -59,14 +59,14 @@ namespace ModifiedMovement
 				"Movespeed",
 				"SprintSpeed",
 				2.5f,
-				"Maximum sprinting speed (Vanilla Lethal Company = 2.25)"
+				"Multiplier for the walking speed to calculate sprinting speed (Vanilla Lethal Company = 2.25)"
 			);
 
 			MoveSpeed = cfg.BindSyncedEntry(
 				"Movespeed",
 				"WalkSpeed",
-				0.5f,
-				"Maximum walking speed (Vanilla Lethal Company = 0.5)"
+				5f,
+				"Maximum walking speed (Vanilla Lethal Company = 5)"
 			);
 
 			ClimbSpeed = cfg.BindSyncedEntry(
