@@ -48,7 +48,7 @@ namespace ModifiedMovement
 	{
 		public const string PLUGIN_GUID = "ModifiedMovement";
 		public const string PLUGIN_NAME = "ModifiedMovement";
-		public const string PLUGIN_VERSION = "1.4.1";
+		public const string PLUGIN_VERSION = "1.4.2";
 	}
 }
 
@@ -102,36 +102,6 @@ namespace ModifiedMovement.Patches
 		static void ModifiedJumpStaminaPatch(ref float ___sprintMeter)
 		{
 			___sprintMeter = Mathf.Clamp(___sprintMeter - (0.08f * Config.Instance.JumpStaminaUsageMultiplier), 0f, Config.Instance.MaxStaminaMultiplier);
-		}
-
-		[HarmonyPostfix]
-		[HarmonyPatch("ConnectClientToPlayerObject")]
-		public static void InitializeLocalPlayer()
-		{
-			if (Config.IsHost)
-			{
-				Config.MessageManager.RegisterNamedMessageHandler($"{PluginInfo.PLUGIN_GUID}_OnRequestConfigSync", Config.OnRequestSync);
-				Config.Synced = true;
-
-				Plugin.Logger.LogInfo("Initialize Is Host");
-				return;
-			}
-
-			Plugin.Logger.LogInfo("Initialize Client");
-			Config.Synced = false;
-			Config.MessageManager.RegisterNamedMessageHandler($"{PluginInfo.PLUGIN_GUID}_OnReceiveConfigSync", Config.OnReceiveSync);
-			Config.RequestSync();
-		}
-	}
-
-	[HarmonyPatch(typeof(GameNetworkManager))]
-	internal class NetworkManagerPatch
-	{
-		[HarmonyPostfix]
-		[HarmonyPatch("StartDisconnect")]
-		public static void PlayerLeave()
-		{
-			Config.RevertSync();
 		}
 	}
 }

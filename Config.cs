@@ -10,7 +10,7 @@ using Unity.Netcode;
 namespace ModifiedMovement
 {
 	[DataContract]
-	public class Config : SyncedInstance<Config>
+	public class Config : SyncedConfig<Config>
 	{
 		[DataMember] public SyncedEntry<float> MaxStaminaMultiplier { get; private set; }
 		[DataMember] public SyncedEntry<float> StaminaUsageMultiplier { get; private set; }
@@ -23,9 +23,9 @@ namespace ModifiedMovement
 		[DataMember] public SyncedEntry<float> ClimbSpeed { get; private set; }
 		[DataMember] public SyncedEntry<float> LimpMultiplier { get; private set; }
 
-		public Config(ConfigFile cfg)
+		public Config(ConfigFile cfg) : base(PluginInfo.PLUGIN_GUID)
 		{
-			InitInstance(this);
+			ConfigManager.Register(this);
 
 			MaxStaminaMultiplier = cfg.BindSyncedEntry(
 				"Movespeed",
@@ -96,69 +96,6 @@ namespace ModifiedMovement
 				0.2f,
 				"Multiplier for player movespeed when limping (Vanilla Lethal Company = 0.2)"
 			);
-		}
-
-		internal static void RequestSync()
-		{
-			if (!IsClient) return;
-
-			using FastBufferWriter stream = new(IntSize, Allocator.Temp);
-
-			// Method `OnRequestSync` will then get called on host.
-			stream.SendMessage($"{PluginInfo.PLUGIN_GUID}_OnRequestConfigSync");
-		}
-
-		internal static void OnRequestSync(ulong clientId, FastBufferReader _)
-		{
-			if (!IsHost) return;
-
-			Plugin.Logger.LogInfo($"Config sync request received from client: {clientId}");
-
-			byte[] array = SerializeToBytes(Instance);
-			int value = array.Length;
-
-			using FastBufferWriter stream = new(value + IntSize, Allocator.Temp);
-
-			try
-			{
-				stream.WriteValueSafe(in value, default);
-				stream.WriteBytesSafe(array);
-
-				stream.SendMessage($"{PluginInfo.PLUGIN_GUID}_OnReceiveConfigSync", clientId);
-			}
-			catch (Exception e)
-			{
-				Plugin.Logger.LogInfo($"Error occurred syncing config with client: {clientId}\n{e}");
-			}
-		}
-
-		internal static void OnReceiveSync(ulong _, FastBufferReader reader)
-		{
-			if (!reader.TryBeginRead(IntSize))
-			{
-				Plugin.Logger.LogInfo("Config sync error: Could not begin reading buffer.");
-				return;
-			}
-
-			reader.ReadValueSafe(out int val, default);
-			if (!reader.TryBeginRead(val))
-			{
-				Plugin.Logger.LogInfo("Config sync error: Host could not sync.");
-				return;
-			}
-
-			byte[] data = new byte[val];
-			reader.ReadBytesSafe(ref data, val);
-
-			try
-			{
-				SyncInstance(data);
-				Plugin.Logger.LogInfo($"Syncing... (ex. Sprint Speed = {Instance.SprintSpeed}");
-			}
-			catch (Exception e)
-			{
-				Plugin.Logger.LogInfo($"Error syncing config instance!\n{e}");
-			}
 		}
 	}
 }
