@@ -22,6 +22,7 @@ namespace ModifiedMovement
 		[DataMember] public SyncedEntry<float> MoveSpeed {  get; private set; }
 		[DataMember] public SyncedEntry<float> ClimbSpeed { get; private set; }
 		[DataMember] public SyncedEntry<float> LimpMultiplier { get; private set; }
+		[DataMember] public SyncedEntry<float> CarryWeightPenaltyMultiplier { get; private set; }
 
 		public Config(ConfigFile cfg) : base(PluginInfo.PLUGIN_GUID)
 		{

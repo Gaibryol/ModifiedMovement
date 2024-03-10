@@ -4,14 +4,18 @@ using GameNetcodeStuff;
 using HarmonyLib;
 using ModifiedMovement;
 using ModifiedMovement.Patches;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace ModifiedMovement
 {
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
-	[BepInDependency("io.github.CSync")]
     public class Plugin : BaseUnityPlugin
     {
 		private readonly Harmony harmony = new Harmony(PluginInfo.PLUGIN_GUID);
@@ -48,7 +52,7 @@ namespace ModifiedMovement
 	{
 		public const string PLUGIN_GUID = "ModifiedMovement";
 		public const string PLUGIN_NAME = "ModifiedMovement";
-		public const string PLUGIN_VERSION = "1.4.2";
+		public const string PLUGIN_VERSION = "1.5.0";
 	}
 }
 
