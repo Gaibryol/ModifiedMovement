@@ -52,7 +52,7 @@ namespace ModifiedMovement
 	{
 		public const string PLUGIN_GUID = "ModifiedMovement";
 		public const string PLUGIN_NAME = "ModifiedMovement";
-		public const string PLUGIN_VERSION = "1.5.0";
+		public const string PLUGIN_VERSION = "1.5.2";
 	}
 }
 
@@ -61,6 +61,8 @@ namespace ModifiedMovement.Patches
 	[HarmonyPatch(typeof(PlayerControllerB))]
 	internal class PlayerControllerBPatch
 	{
+		private static bool patchedJump = false;
+
 		[HarmonyPostfix]
 		[HarmonyPatch("Update")]
 		static void ModifiedMovementPatch(ref float ___sprintMeter, ref bool ___isSprinting, ref bool ___isWalking, ref float ___sprintTime, ref float ___carryWeight, ref float ___sprintMultiplier)
@@ -98,7 +100,18 @@ namespace ModifiedMovement.Patches
 		[HarmonyPatch("PlayerJump")]
 		static void ModifiedJumpPatch(ref float ___jumpForce)
 		{
-			___jumpForce *= Config.Instance.JumpMultiplier.Value;
+			if (!patchedJump)
+			{
+				___jumpForce *= Config.Instance.JumpMultiplier.Value;
+				patchedJump = true;
+			}
+		}
+
+		[HarmonyPostfix]
+		[HarmonyPatch("Start")]
+		static void ModifiedJumpPrePatch()
+		{
+			patchedJump = false;
 		}
 
 		[HarmonyPostfix]
