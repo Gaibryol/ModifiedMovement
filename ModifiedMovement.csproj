@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>ModifiedMovement</AssemblyName>
     <Description>Mod that changes the player's movement values</Description>
-    <Version>1.5.2</Version>
+    <Version>1.5.3</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
